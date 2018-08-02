@@ -1,19 +1,28 @@
 package com.eth.pictureapp;
 
 import android.Manifest;
+import android.app.LoaderManager;
+import android.content.CursorLoader;
+import android.content.Loader;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.GridView;
+import android.widget.SimpleCursorAdapter;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int REQUEST_READ_STORAGE = 3;
+    private SimpleCursorAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,5 +67,41 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void readThumbnails() {
+        GridView grid = findViewById(R.id.grid);
+        String[] from = {MediaStore.Images.Thumbnails.DATA,
+                MediaStore.Images.Media.DISPLAY_NAME};
+        int[] to = {R.id.thumb_image, R.id.thumb_text};
+        //參數 Cursor 先給 null 值 之後在 用CursorLoader處理
+        adapter = new SimpleCursorAdapter(
+                getBaseContext(),
+                R.layout.thumb_item,
+                null,
+                from,
+                to,
+                0
+        );
+        grid.setAdapter(adapter);
+        getLoaderManager().initLoader(0, null, this);
+
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        //用android.net.Uri儲存查詢的資料位置
+        Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        //產生並回傳資料讀取器物件 並將uri傳遞給他
+        return new CursorLoader(this,uri,null,null,null,null);
+    }
+
+    //資料讀取器向內容提供者查詢完畢會自動執行此方法
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        //
+        adapter.swapCursor(cursor);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }
