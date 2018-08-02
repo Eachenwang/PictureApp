@@ -3,6 +3,7 @@ package com.eth.pictureapp;
 import android.Manifest;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -14,12 +15,16 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.SimpleCursorAdapter;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class MainActivity extends AppCompatActivity
+        implements LoaderManager.LoaderCallbacks<Cursor>,
+                    AdapterView.OnItemClickListener {
 
     private static final int REQUEST_READ_STORAGE = 3;
     private SimpleCursorAdapter adapter;
@@ -83,6 +88,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         grid.setAdapter(adapter);
         getLoaderManager().initLoader(0, null, this);
 
+        grid.setOnItemClickListener(this);
+
     }
 
     @Override
@@ -96,12 +103,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     //資料讀取器向內容提供者查詢完畢會自動執行此方法
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        //
+        //替換cursor
         adapter.swapCursor(cursor);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+        Intent intent = new Intent(this, DetailActivity.class);
+        intent.putExtra("POSITION", position);
+        startActivity(intent);
     }
 }
